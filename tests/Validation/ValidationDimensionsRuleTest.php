@@ -339,7 +339,17 @@ class ValidationDimensionsRuleTest extends TestCase
     {
         $values = Arr::wrap($values);
 
-        echo Container::getInstance()->has('translator');
+        // assert that the translator is still resolvable
+        $this->assertInstanceOf(
+            Translator::class,
+            Container::getInstance()->make('translator'),
+            'The translator should be resolvable from the container.'
+        );
+
+        $translatorIsBound = Container::getInstance()->bound('translator');
+        $translatorIsResolved = Container::getInstance()->resolved('translator');
+        echo "Translator is bound: $translatorIsBound\n";
+        echo "Translator is resolved: $translatorIsResolved\n";
 
         foreach ($values as $value) {
             $v = new Validator(
@@ -360,16 +370,30 @@ class ValidationDimensionsRuleTest extends TestCase
 
     protected function setUp(): void
     {
-        $container = Container::getInstance();
+        $originalContainer = Container::getInstance();
+        echo "Original container: ".get_class($originalContainer)."\n";
+
+        $container = new Container;
+        Container::setInstance($container);
+
+        echo "Setting translator in ".__METHOD__."\n";
 
         $container->bind('translator', function () {
+            echo "Translator bound\n";
             return new Translator(new ArrayLoader, 'en');
+        });
+
+        // add a debug echo to ensure that the translator is in the container now.
+        $container->resolving('translator', function ($translator) {
+            echo "Translator resolved\n";
+            echo "Translator: ".get_class($translator)."\n";
         });
 
         Facade::setFacadeApplication($container);
 
         (new ValidationServiceProvider($container))->register();
     }
+
 
     protected function tearDown(): void
     {
