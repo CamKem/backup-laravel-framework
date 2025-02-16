@@ -34,23 +34,23 @@ class ValidationDimensionsRuleTest extends TestCase
         );
     }
 
-//    public function testMinWidth()
-//    {
-//        $rule = Dimensions::defaults()->minWidth(100);
-//
-//        $this->passes(
-//            $rule,
-//            width: 100,
-//            height: 100,
-//        );
-//
-//        $this->fails(
-//            $rule,
-//            width: 99,
-//            height: 100,
-//            message: 'validation.min_width'
-//        );
-//    }
+    public function testMinWidth()
+    {
+        $rule = Dimensions::defaults()->minWidth(100);
+
+        $this->passes(
+            $rule,
+            width: 100,
+            height: 100,
+        );
+
+        $this->fails(
+            $rule,
+            width: 99,
+            height: 100,
+            message: 'validation.min_width'
+        );
+    }
 
     public function testMaxWidth()
     {
@@ -339,24 +339,30 @@ class ValidationDimensionsRuleTest extends TestCase
     {
         $values = Arr::wrap($values);
 
+        $container = Container::getInstance();
+
         // assert that the translator is still resolvable
         $this->assertInstanceOf(
             Translator::class,
-            Container::getInstance()->make('translator'),
+            $container->make('translator'),
             'The translator should be resolvable from the container.'
         );
 
-        $translatorIsBound = Container::getInstance()->bound('translator');
-        $translatorIsResolved = Container::getInstance()->resolved('translator');
-        echo "Translator is bound: $translatorIsBound\n";
-        echo "Translator is resolved: $translatorIsResolved\n";
+        // add a debug echo to ensure that the translator is in the container now.
+        $container->resolving('translator', function ($translator) use ($container) {
+            echo "Translator being resolved from container\n";
+            echo "Translator is bound: " . ($container->bound('translator') ? 'yes' : 'no') . "\n";
+            echo "Translator is resolved: " . ($container->resolved('translator') ? 'yes' : 'no') . "\n\n\n";
+        });
 
         foreach ($values as $value) {
             $v = new Validator(
                 Container::getInstance()->make('translator'),
                 //resolve('translator'),
                 ['my_file' => $value],
-                ['my_file' => is_object($rule) ? clone $rule : $rule]
+                ['my_file' => $rule]
+                // remove the cloning because it could be causing issues.
+                    //is_object($rule) ? clone $rule : $rule]
             );
 
             $this->assertSame($result, $v->passes());
@@ -370,23 +376,11 @@ class ValidationDimensionsRuleTest extends TestCase
 
     protected function setUp(): void
     {
-        $originalContainer = Container::getInstance();
-        echo "Original container: ".get_class($originalContainer)."\n";
-
-        $container = new Container;
-        Container::setInstance($container);
-
-        echo "Setting translator in ".__METHOD__."\n";
+        $container = Container::getInstance();
 
         $container->bind('translator', function () {
-            echo "Translator bound\n";
+            echo "Translator being bound to container\n";
             return new Translator(new ArrayLoader, 'en');
-        });
-
-        // add a debug echo to ensure that the translator is in the container now.
-        $container->resolving('translator', function ($translator) {
-            echo "Translator resolved\n";
-            echo "Translator: ".get_class($translator)."\n";
         });
 
         Facade::setFacadeApplication($container);
