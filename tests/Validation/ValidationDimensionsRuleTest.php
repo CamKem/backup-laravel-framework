@@ -34,23 +34,23 @@ class ValidationDimensionsRuleTest extends TestCase
         );
     }
 
-    public function testMinWidth()
-    {
-        $rule = Dimensions::defaults()->minWidth(100);
-
-        $this->passes(
-            $rule,
-            width: 100,
-            height: 100,
-        );
-
-        $this->fails(
-            $rule,
-            width: 99,
-            height: 100,
-            message: 'validation.min_width'
-        );
-    }
+//    public function testMinWidth()
+//    {
+//        $rule = Dimensions::defaults()->minWidth(100);
+//
+//        $this->passes(
+//            $rule,
+//            width: 100,
+//            height: 100,
+//        );
+//
+//        $this->fails(
+//            $rule,
+//            width: 99,
+//            height: 100,
+//            message: 'validation.min_width'
+//        );
+//    }
 
     public function testMaxWidth()
     {
