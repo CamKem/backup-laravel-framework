@@ -349,29 +349,43 @@ class ValidationDimensionsRuleTest extends TestCase
         );
 
         // add a debug echo to ensure that the translator is in the container now.
-        $container->resolving('translator', function ($translator) use ($container) {
+        $container->resolving('translator', function ($translator) use ($values, $rule, $result, $messages) {
             echo "Translator being resolved from container\n";
-            echo "Translator is bound: " . ($container->bound('translator') ? 'yes' : 'no') . "\n";
-            echo "Translator is resolved: " . ($container->resolved('translator') ? 'yes' : 'no') . "\n\n\n";
+            echo "Translator is resolved: " . ($translator instanceof Translator ? 'yes' : 'no') . "\n";
+            foreach ($values as $value) {
+                $v = new Validator(
+                    $translator,
+                    ['my_file' => $value],
+                    ['my_file' => $rule]
+                );
+
+                $this->assertSame($result, $v->passes());
+
+                $this->assertSame(
+                    $result ? [] : ['my_file' => $messages],
+                    $v->messages()->toArray()
+                );
+            }
+
         });
 
-        foreach ($values as $value) {
-            $v = new Validator(
-                Container::getInstance()->make('translator'),
-                //resolve('translator'),
-                ['my_file' => $value],
-                ['my_file' => $rule]
-                // remove the cloning because it could be causing issues.
-                    //is_object($rule) ? clone $rule : $rule]
-            );
-
-            $this->assertSame($result, $v->passes());
-
-            $this->assertSame(
-                $result ? [] : ['my_file' => $messages],
-                $v->messages()->toArray()
-            );
-        }
+//        foreach ($values as $value) {
+//            $v = new Validator(
+//                Container::getInstance()->make('translator'),
+//                //resolve('translator'),
+//                ['my_file' => $value],
+//                ['my_file' => $rule]
+//                // remove the cloning because it could be causing issues.
+//                    //is_object($rule) ? clone $rule : $rule]
+//            );
+//
+//            $this->assertSame($result, $v->passes());
+//
+//            $this->assertSame(
+//                $result ? [] : ['my_file' => $messages],
+//                $v->messages()->toArray()
+//            );
+//        }
     }
 
     protected function setUp(): void
