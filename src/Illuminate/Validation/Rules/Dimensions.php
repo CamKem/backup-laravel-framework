@@ -414,6 +414,13 @@ class Dimensions implements Rule, DataAwareRule, ValidatorAwareRule
         return true;
     }
 
+    public function __clone()
+    {
+        // we need to reset the validator & data
+        $this->validator = null;
+        $this->data = [];
+    }
+
     /**
      * Adds the given failures, and return false.
      *
