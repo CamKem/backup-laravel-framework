@@ -425,18 +425,28 @@ class Dimensions implements Rule, DataAwareRule, ValidatorAwareRule
         echo "Failer called" . PHP_EOL;
 
         $translator = $this->validator->getTranslator();
-
         echo "translator exists: " . ($translator ? 'true' : 'false') . PHP_EOL;
 
-        $messages = collect(Arr::wrap($messages))->map(
-            fn ($message) => $this->validator->getTranslator()->get($message)
-        )->all();
+        $messages = collect(Arr::wrap($messages))->map(function ($message) {
+            return $this->validator->getTranslator()->get($message);
+        })->all();
+
+        // Log the current call stack:
+        echo "Call stack:" . PHP_EOL;
+        echo print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), true) . PHP_EOL;
+
 
         echo "messages: " . implode(', ', $messages) . PHP_EOL;
 
         $this->messages = array_merge($this->messages, $messages);
 
         return false;
+    }
+
+    public function __clone()
+    {
+        $this->validator = null;
+        $this->data = [];
     }
 
     /**
