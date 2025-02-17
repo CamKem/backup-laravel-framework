@@ -21,7 +21,7 @@ class ValidationImageFileRuleTest extends TestCase
         $this->fails(
             File::image()->dimensions(Rule::dimensions()->width(100)->height(100)),
             UploadedFile::fake()->image('foo.png', 101, 101),
-            ['validation.width', 'validation.height'],
+            ['validation.dimensions'],
         );
 
         $this->passes(
@@ -35,7 +35,7 @@ class ValidationImageFileRuleTest extends TestCase
         $this->fails(
             File::image()->dimensions(Rule::dimensions()->width(100)->height(100)),
             new UploadedFileWithCustomImageSizeMethod(stream_get_meta_data($tmpFile = tmpfile())['uri'], 'foo.png'),
-            ['validation.width', 'validation.height'],
+            ['validation.dimensions'],
         );
 
         $this->passes(
@@ -49,7 +49,7 @@ class ValidationImageFileRuleTest extends TestCase
         $this->fails(
             File::image()->dimensions(Rule::dimensions()->ratio(1)),
             UploadedFile::fake()->image('foo.png', 105, 100),
-            ['validation.ratio'],
+            ['validation.dimensions'],
         );
 
         $this->passes(
@@ -63,7 +63,7 @@ class ValidationImageFileRuleTest extends TestCase
         $this->fails(
             File::image()->dimensions(Rule::dimensions()->minRatio(1 / 2)),
             UploadedFile::fake()->image('foo.png', 100, 100),
-            ['validation.min_ratio'],
+            ['validation.dimensions'],
         );
 
         $this->passes(
@@ -77,7 +77,7 @@ class ValidationImageFileRuleTest extends TestCase
         $this->fails(
             File::image()->dimensions(Rule::dimensions()->maxRatio(1 / 2)),
             UploadedFile::fake()->image('foo.png', 100, 300),
-            ['validation.max_ratio'],
+            ['validation.dimensions'],
         );
 
         $this->passes(
@@ -91,7 +91,7 @@ class ValidationImageFileRuleTest extends TestCase
         $this->fails(
             File::image()->dimensions(Rule::dimensions()->ratioBetween(1 / 2, 1 / 3)),
             UploadedFile::fake()->image('foo.png', 100, 100),
-            ['validation.ratio_between'],
+            ['validation.dimensions'],
         );
 
         $this->passes(

@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Exceptions\MathException;
-use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Stringable;
 use Illuminate\Translation\ArrayLoader;
 use Illuminate\Translation\Translator;
@@ -50,10 +49,6 @@ class ValidationValidatorTest extends TestCase
 
         Carbon::setTestNow(null);
         m::close();
-
-        Container::setInstance(null);
-        Facade::clearResolvedInstances();
-        Facade::setFacadeApplication(null);
     }
 
     public function testNestedErrorMessagesAreRetrievedFromLocalArray()
