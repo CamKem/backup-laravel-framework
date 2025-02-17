@@ -11,7 +11,8 @@ use Illuminate\Translation\Translator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Dimensions;
 use Illuminate\Validation\ValidationServiceProvider;
-use Illuminate\Validation\Validator;
+//use Illuminate\Validation\Validator;
+use Illuminate\Support\Facades\Validator;
 use PHPUnit\Framework\TestCase;
 
 class ValidationDimensionsRuleTest extends TestCase
@@ -30,7 +31,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 99,
             height: 100,
-            message: 'validation.width'
+            messages: 'validation.width'
         );
     }
 
@@ -48,7 +49,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 99,
             height: 100,
-            message: 'validation.min_width'
+            messages: 'validation.min_width'
         );
     }
 
@@ -66,7 +67,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 101,
             height: 100,
-            message: 'validation.max_width'
+            messages: 'validation.max_width'
         );
     }
 
@@ -84,7 +85,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 99,
             height: 100,
-            message: 'validation.width_between'
+            messages: 'validation.width_between'
         );
     }
 
@@ -102,7 +103,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 100,
             height: 99,
-            message: 'validation.height'
+            messages: 'validation.height'
         );
     }
 
@@ -120,7 +121,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 100,
             height: 99,
-            message: 'validation.min_height'
+            messages: 'validation.min_height'
         );
     }
 
@@ -138,7 +139,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 100,
             height: 101,
-            message: 'validation.max_height'
+            messages: 'validation.max_height'
         );
     }
 
@@ -156,7 +157,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 100,
             height: 99,
-            message: 'validation.height_between'
+            messages: 'validation.height_between'
         );
     }
 
@@ -174,7 +175,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 100,
             height: 100,
-            message: 'validation.ratio'
+            messages: 'validation.ratio'
         );
     }
 
@@ -191,7 +192,7 @@ class ValidationDimensionsRuleTest extends TestCase
         $this->fails($rule,
             width: 100,
             height: 100,
-            message: 'validation.min_ratio'
+            messages: 'validation.min_ratio'
         );
     }
 
@@ -209,7 +210,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 100,
             height: 200,
-            message: 'validation.max_ratio'
+            messages: 'validation.max_ratio'
         );
     }
 
@@ -227,7 +228,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 100,
             height: 100,
-            message: 'validation.ratio_between'
+            messages: 'validation.ratio_between'
         );
     }
 
@@ -245,7 +246,7 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 190,
             height: 210,
-            message: 'validation.dimensions'
+            messages: 'validation.dimensions'
         );
     }
 
@@ -268,8 +269,8 @@ class ValidationDimensionsRuleTest extends TestCase
         $this->fails(
             $rule,
             width: 190,
-            height: 200,
-            message: 'validation.ratio'
+            height: 210,
+            messages: ['validation.max_height', 'validation.ratio']
         );
     }
 
@@ -289,7 +290,7 @@ class ValidationDimensionsRuleTest extends TestCase
                 ->rules(['mimes:png']),
             width: 100,
             height: 100,
-            message: 'validation.mimes'
+            messages: 'validation.mimes'
         );
     }
 
@@ -311,17 +312,17 @@ class ValidationDimensionsRuleTest extends TestCase
             $rule,
             width: 99,
             height: 100,
-            message: 'validation.width'
+            messages: 'validation.width'
         );
     }
 
-    public function fails($rule, $width, $height, $message)
+    public function fails($rule, $width, $height, $messages)
     {
         $this->assertValidationRules(
             $rule,
             UploadedFile::fake()->image('image.jpg', $width, $height),
             false,
-            [$message]
+            is_array($messages) ? $messages : [$messages]
         );
     }
 
@@ -339,63 +340,35 @@ class ValidationDimensionsRuleTest extends TestCase
     {
         $values = Arr::wrap($values);
 
-        $container = Container::getInstance();
+        foreach ($values as $value) {
+            $v = Validator::make(
+                data: ['my_file' => $value],
+                rules: ['my_file' => is_object($rule) ? clone $rule : $rule],
+            );
 
-        // assert that the translator is still resolvable
-        $this->assertInstanceOf(
-            Translator::class,
-            $container->make('translator'),
-            'The translator should be resolvable from the container.'
-        );
+            $this->assertSame($result, $v->passes());
 
-        // add a debug echo to ensure that the translator is in the container now.
-        $container->resolving('translator', function ($translator) use ($values, $rule, $result, $messages) {
-            echo "Translator being resolved from container\n";
-            echo "Translator is resolved: " . ($translator instanceof Translator ? 'yes' : 'no') . "\n";
-            foreach ($values as $value) {
-                $v = new Validator(
-                    $translator,
-                    ['my_file' => $value],
-                    ['my_file' => $rule]
-                );
-
-                $this->assertSame($result, $v->passes());
-
-                $this->assertSame(
-                    $result ? [] : ['my_file' => $messages],
-                    $v->messages()->toArray()
-                );
-            }
-
-        });
-
-//        foreach ($values as $value) {
-//            $v = new Validator(
-//                Container::getInstance()->make('translator'),
-//                //resolve('translator'),
-//                ['my_file' => $value],
-//                ['my_file' => $rule]
-//                // remove the cloning because it could be causing issues.
-//                    //is_object($rule) ? clone $rule : $rule]
-//            );
-//
-//            $this->assertSame($result, $v->passes());
-//
-//            $this->assertSame(
-//                $result ? [] : ['my_file' => $messages],
-//                $v->messages()->toArray()
-//            );
-//        }
+            $this->assertSame(
+                $result ? [] : ['my_file' => $messages],
+                $v->messages()->toArray()
+            );
+        }
     }
 
     protected function setUp(): void
     {
         $container = Container::getInstance();
 
-        $container->bind('translator', function () {
-            echo "Translator being bound to container\n";
-            return new Translator(new ArrayLoader, 'en');
-        });
+        $container->bind(
+            abstract: 'translator',
+            concrete: static fn () => new Translator(new ArrayLoader, 'en'),
+            shared: true,
+        );
+
+        $this->assertTrue(
+            condition: $container->has('translator'),
+            message: 'Container is missing the translator binding.'
+        );
 
         Facade::setFacadeApplication($container);
 
@@ -406,9 +379,7 @@ class ValidationDimensionsRuleTest extends TestCase
     protected function tearDown(): void
     {
         Container::setInstance(null);
-
         Facade::clearResolvedInstances();
-
         Facade::setFacadeApplication(null);
     }
 }
