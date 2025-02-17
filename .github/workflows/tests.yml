@@ -96,8 +96,8 @@ jobs:
       - name: Upload test log
         uses: actions/upload-artifact@v4
         with:
-          name: test1-log
-          path: test1.log
+          name: test-linux-log-${{ github.run_id }}
+          path: test.log
 
       - name: Store artifacts
         uses: actions/upload-artifact@v4
@@ -168,7 +168,7 @@ jobs:
       - name: Upload test log
         uses: actions/upload-artifact@v4
         with:
-          name: test-log
+          name: test-windows-log-${{ github.run_id }}
           path: test.log
 
       - name: Store artifacts
