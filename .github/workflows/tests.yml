@@ -82,7 +82,8 @@ jobs:
           command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
       - name: Execute tests
-        run: vendor/bin/phpunit --no-output --log-events-text php://stdout --stop-on-error
+        run: vendor/bin/phpunit --debug --stop-on-error 2>&1 | tee test1.log
+        # run: vendor/bin/phpunit --no-output --log-events-text php://stdout --stop-on-error
         # run: vendor/bin/phpunit --display-deprecation ${{ matrix.stability == 'prefer-stable' && '--fail-on-deprecation' || '' }}
         env:
           DB_PORT: ${{ job.services.mysql.ports[3306] }}
@@ -91,6 +92,12 @@ jobs:
           DYNAMODB_ENDPOINT: "http://localhost:8888"
           AWS_ACCESS_KEY_ID: randomKey
           AWS_SECRET_ACCESS_KEY: randomSecret
+
+      - name: Upload test log
+        uses: actions/upload-artifact@v4
+        with:
+          name: test1-log
+          path: test1.log
 
       - name: Store artifacts
         uses: actions/upload-artifact@v4
@@ -152,10 +159,17 @@ jobs:
 
       - name: Execute tests
         # run: vendor/bin/phpunit
-        run: vendor/bin/phpunit --no-output --log-events-text php://stdout --stop-on-error
+        # run: vendor/bin/phpunit --no-output --log-events-text php://stdout --stop-on-error
+        run: vendor/bin/phpunit --debug --stop-on-error 2>&1 | tee test.log
         env:
           AWS_ACCESS_KEY_ID: random_key
           AWS_SECRET_ACCESS_KEY: random_secret
+
+      - name: Upload test log
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-log
+          path: test.log
 
       - name: Store artifacts
         uses: actions/upload-artifact@v4
