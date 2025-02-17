@@ -57,7 +57,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd, redis, igbinary, msgpack, memcached, gmp, :php-psr
-          ini-values: error_reporting=E_ALL
+          ini-values: error_reporting=E_ALL, display_errors=1
           tools: composer:v2
           coverage: none
         env:
@@ -96,7 +96,7 @@ jobs:
       - name: Upload test log
         uses: actions/upload-artifact@v4
         with:
-          name: test-linux-log-${{ github.run_id }}
+          name: test-linux-log-${{ github.run_id }}-${{ matrix.php }}-${{ matrix.phpunit }}-${{ matrix.stability }}
           path: test.log
 
       - name: Store artifacts
@@ -168,7 +168,7 @@ jobs:
       - name: Upload test log
         uses: actions/upload-artifact@v4
         with:
-          name: test-windows-log-${{ github.run_id }}
+          name: test-windows-log-${{ github.run_id }}-${{ matrix.php }}-${{ matrix.phpunit }}-${{ matrix.stability }}
           path: test.log
 
       - name: Store artifacts
