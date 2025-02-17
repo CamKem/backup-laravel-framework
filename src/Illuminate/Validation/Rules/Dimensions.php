@@ -422,9 +422,17 @@ class Dimensions implements Rule, DataAwareRule, ValidatorAwareRule
      */
     protected function fail($messages)
     {
+        echo "Failer called" . PHP_EOL;
+
+        $translator = $this->validator->getTranslator();
+
+        echo "translator exists: " . ($translator ? 'true' : 'false') . PHP_EOL;
+
         $messages = collect(Arr::wrap($messages))->map(
             fn ($message) => $this->validator->getTranslator()->get($message)
         )->all();
+
+        echo "messages: " . implode(', ', $messages) . PHP_EOL;
 
         $this->messages = array_merge($this->messages, $messages);
 
