@@ -11,8 +11,8 @@ use Illuminate\Translation\Translator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Dimensions;
 use Illuminate\Validation\ValidationServiceProvider;
-use Illuminate\Validation\Validator;
-//use Illuminate\Support\Facades\Validator;
+//use Illuminate\Validation\Validator;
+use Illuminate\Support\Facades\Validator;
 use PHPUnit\Framework\TestCase;
 
 class ValidationDimensionsRuleTest extends TestCase
@@ -341,16 +341,16 @@ class ValidationDimensionsRuleTest extends TestCase
         $values = Arr::wrap($values);
 
         foreach ($values as $value) {
-            //  $v = Validator::make(
-            //      data: ['my_file' => $value],
-            //      rules: ['my_file' => is_object($rule) ? clone $rule : $rule],
-            //  );
+              $v = Validator::make(
+                  data: ['my_file' => $value],
+                  rules: ['my_file' => is_object($rule) ? clone $rule : $rule],
+              );
 
-            $v = new Validator(
-                translator: resolve('translator'),
-                data: ['my_file' => $value],
-                rules: ['my_file' => is_object($rule) ? clone $rule : $rule],
-            );
+//            $v = new Validator(
+//                translator: resolve('translator'),
+//                data: ['my_file' => $value],
+//                rules: ['my_file' => is_object($rule) ? clone $rule : $rule],
+//            );
 
             $this->assertSame($result, $v->passes());
 
